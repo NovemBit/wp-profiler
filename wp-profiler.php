@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-// Include the main WooCommerce class.
+// Include the main WPPF class.
 if ( ! class_exists( 'WPPF' ) ) {
 	include_once dirname( __FILE__ ) . '/includes/class-wppf.php';
 }
@@ -23,7 +23,7 @@ if ( ! defined( 'WPPF_PLUGIN_FILE' ) ) {
 }
 
 /**
- * Returns the main instance of WP_Profiler.
+ * Returns the main instance of WPPF.
  *
  * @return WPPF
  */

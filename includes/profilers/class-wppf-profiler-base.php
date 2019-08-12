@@ -3,12 +3,19 @@ defined( 'ABSPATH' ) || exit;
 
 abstract class WPPF_Profiler_Base {
 
-	public static $name;
+	public $name;
+
+	public function __construct($config) {
+
+		foreach($config as $key=>$value){
+			$this->{$key} = $value;
+		}
+	}
 
 	/**
 	 * Form to run profiler
 	 */
-	public static function prepare() {
+	public function prepare() {
 		add_action('wp_footer',function() {
 			echo sprintf( '<form id="%s" class="%s" action="" method="post"><input type="submit" name="%s" value="%s"></form>',
 				static::class,
@@ -19,18 +26,18 @@ abstract class WPPF_Profiler_Base {
 		});
 	}
 
-	public static function init() {
+	public function init() {
 		if ( isset( $_POST[ static::class ] ) ) {
-			static::run();
+			$this->run();
 		} else {
-			static::prepare();
+			$this->prepare();
 		}
 	}
 
-	public static function getName() {
+	public function getName() {
 
-		if ( isset( static::$name ) ) {
-			return static::$name;
+		if ( isset( $this->name ) ) {
+			return $this->name;
 		}
 
 		$name = preg_replace( '/^WPPF_/', '', static::class );
@@ -38,7 +45,7 @@ abstract class WPPF_Profiler_Base {
 		return str_replace( '_', ' ', $name );
 	}
 
-	public static function run(){}
+	public function run(){}
 
 //	abstract public static function view();
 

@@ -17,19 +17,29 @@ class WPPF_Bootstrap {
 
 		DevLog::register();
 
-		foreach (self::getActiveProfilerList() as $profiler){
-			call_user_func([$profiler,'init']);
+		foreach ( self::getActiveProfilerList() as $profiler ) {
+
+			/*
+			 * Creating profiler object with config
+			 * */
+			$obj = new $profiler( WPPF::getOption( $profiler . "_config", [] ) );
+
+			/*
+			 * Calling init method of profiler
+			 * */
+			call_user_func( [ $obj, 'init' ] );
 		}
 
 	}
 
+
 	/**
+	 * Getting all active profiler list
+	 * With array
 	 * @return string[]
 	 */
-	private static function getActiveProfilerList(){
-
-		return WPPF::getOption('active_profiler_list');
-
+	private static function getActiveProfilerList() {
+		return WPPF::getOption( 'active_profiler_list', [] );
 	}
 
 	/**
@@ -37,6 +47,9 @@ class WPPF_Bootstrap {
 	 */
 	private static function includeFiles() {
 
+		/*
+		 * Include composer vendor autoload.php file
+		 * */
 		include_once dirname( __FILE__ ) . "/../vendor/autoload.php";
 
 		include_once "class-wppf.php";
@@ -49,6 +62,10 @@ class WPPF_Bootstrap {
 	 * Define constants
 	 */
 	private static function defineConstants() {
+
+		/*
+		 * Connect WP database to DevLog Profiler
+		 * */
 		if ( ! defined( 'DEV_LOG_DB' ) ) {
 			define( 'DEV_LOG_DB', array(
 				'pdo'      => 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME,

@@ -5,7 +5,7 @@ use DevLog\DevLog;
 
 class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 
-	public static function init() {
+	public function init() {
 
 		if ( wp_doing_ajax() ) {
 			return;

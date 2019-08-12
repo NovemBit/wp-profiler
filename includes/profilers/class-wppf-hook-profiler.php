@@ -7,11 +7,11 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 
 
 
-	public static function run() {
+	public function run() {
 		self::retrieve_wp_hooks();
 	}
 
-	private static $_mutex = [];
+	private $_mutex = [];
 
 	/**
 	 * @param $a
@@ -43,7 +43,7 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 	 * Fetch hooks and add callbacks to measure
 	 * Compiling time
 	 */
-	private static function retrieve_wp_hooks() {
+	private function retrieve_wp_hooks() {
 
 		/*
 		 * Taking global hooks variable
@@ -52,8 +52,8 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 
 		foreach ( $wp_filter as $name => &$hook ) {
 
-			if ( ! isset( self::$_mutex[ $name ] ) ) {
-				self::$_mutex[ $name ] = true;
+			if ( ! isset( $this->_mutex[ $name ] ) ) {
+				$this->_mutex[ $name ] = true;
 
 
 				$hook->callbacks = array( PHP_INT_MIN => $hook->callbacks[ PHP_INT_MIN ] ?? array() ) + $hook->callbacks;
@@ -62,7 +62,7 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 
 				$hook->callbacks[ PHP_INT_MIN ] = array(
 					                                  'DevLog_hook_start' => array(
-						                                  'function'      => array( self::class, 'hook_start' ),
+						                                  'function'      => array( $this, 'hook_start' ),
 						                                  'accepted_args' => 1
 
 					                                  )
@@ -70,7 +70,7 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 
 				$hook->callbacks[ PHP_INT_MAX ] = array(
 					                                  'DevLog_hook_end' => array(
-						                                  'function'      => array( self::class, 'hook_end' ),
+						                                  'function'      => array( $this, 'hook_end' ),
 						                                  'accepted_args' => 1
 
 					                                  )
