@@ -5,10 +5,6 @@ abstract class WPPF_Profiler_Base {
 
 	public static $name;
 
-	public static function rules() {
-
-	}
-
 	/**
 	 * Form to run profiler
 	 */
@@ -42,6 +38,8 @@ abstract class WPPF_Profiler_Base {
 		return str_replace( '_', ' ', $name );
 	}
 
-	abstract public static function run();
+	public static function run(){}
+
+//	abstract public static function view();
 
 }

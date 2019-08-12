@@ -42,6 +42,7 @@ class WPPF_Bootstrap {
 		include_once "class-wppf.php";
 		include_once "profilers/class-wppf-profiler-base.php";
 		include_once "profilers/class-wppf-hook-profiler.php";
+		include_once "profilers/class-wppf-request-profiler.php";
 	}
 
 	/**
