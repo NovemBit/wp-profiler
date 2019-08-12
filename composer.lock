@@ -1,0 +1,55 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "1677af556635329bf6a004c1b8900b49",
+    "packages": [
+        {
+            "name": "novembit/dev-log",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/NovemBit/dev-log.git",
+                "reference": "f954a6f7e1d8e002949c5ad67ec36b3f6573c6a9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/NovemBit/dev-log/zipball/f954a6f7e1d8e002949c5ad67ec36b3f6573c6a9",
+                "reference": "f954a6f7e1d8e002949c5ad67ec36b3f6573c6a9",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-pdo": "*",
+                "php": ">=7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "init.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "description": "PHP powerful debugging tool",
+            "keywords": [
+                "debugger",
+                "logger"
+            ],
+            "time": "2019-08-09T06:34:52+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "novembit/dev-log": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=7.0"
+    },
+    "platform-dev": []
+}

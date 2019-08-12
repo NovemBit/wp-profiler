@@ -1,0 +1,32 @@
+{
+  "name": "novembit/wp-profiler",
+  "description": "WordPress profiling plugin.",
+  "keywords": [
+    "logger",
+    "debugger"
+  ],
+  "minimum-stability": "stable",
+  "type": "project",
+  "require": {
+    "php": ">=7.0",
+    "novembit/dev-log": "dev-master"
+  },
+  "require-dev": {
+  },
+  "config": {
+    "process-timeout": 1800,
+    "fxp-asset": {
+      "enabled": false
+    }
+  },
+  "scripts": {
+  },
+  "extra": {
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
+}

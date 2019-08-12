@@ -1,0 +1,29 @@
+{
+  "name": "novembit/dev-log",
+  "description": "PHP powerful debugging tool",
+  "keywords": [
+    "logger",
+    "debugger"
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=7.0",
+    "ext-json": "*",
+    "ext-pdo": "*"
+  },
+  "require-dev": {
+  },
+  "autoload" : {
+    "files" : ["init.php"]
+  },
+  "scripts": {
+  },
+  "extra": {
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
+}

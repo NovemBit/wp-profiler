@@ -1,0 +1,37 @@
+[
+    {
+        "name": "novembit/dev-log",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/NovemBit/dev-log.git",
+            "reference": "f954a6f7e1d8e002949c5ad67ec36b3f6573c6a9"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/NovemBit/dev-log/zipball/f954a6f7e1d8e002949c5ad67ec36b3f6573c6a9",
+            "reference": "f954a6f7e1d8e002949c5ad67ec36b3f6573c6a9",
+            "shasum": ""
+        },
+        "require": {
+            "ext-json": "*",
+            "ext-pdo": "*",
+            "php": ">=7.0"
+        },
+        "time": "2019-08-09T06:34:52+00:00",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "files": [
+                "init.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "description": "PHP powerful debugging tool",
+        "keywords": [
+            "debugger",
+            "logger"
+        ]
+    }
+]
