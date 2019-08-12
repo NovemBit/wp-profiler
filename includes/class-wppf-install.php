@@ -4,17 +4,20 @@ defined( 'ABSPATH' ) || exit;
 
 class WPPF_Install {
 
+	private static $filename = 'wppf.php';
+
 	public static function install() {
-
 		self::install_mu_plugin();
+	}
 
+	public function uninstall(){
+		self::uninstall_mu_plugin();
 	}
 
 	private static function install_mu_plugin() {
 
-		$filename = 'wppf.php';
-		$source   = dirname( __FILE__ ) . '/../mu-plugins/' . $filename;
-		$target   = WPMU_PLUGIN_DIR . '/' . $filename;
+		$source = dirname( __FILE__ ) . '/../mu-plugins/' . self::$filename;
+		$target = WPMU_PLUGIN_DIR . '/' . self::$filename;
 
 		if ( ! copy( $source, $target ) ) {
 			add_action( 'admin_notices', function () {
@@ -26,6 +29,16 @@ class WPPF_Install {
 			} );
 
 		}
+
+	}
+
+	private static function uninstall_mu_plugin(){
+		$target = WPMU_PLUGIN_DIR . '/' . self::$filename;
+
+		if(unlink($target)){
+		    return true;
+        }
+		return false;
 
 	}
 

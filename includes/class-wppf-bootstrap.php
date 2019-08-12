@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 use DevLog\DevLog;
 
 class WPPF_Bootstrap {

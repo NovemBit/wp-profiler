@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 
 abstract class WPPF_Profiler_Base {
 
