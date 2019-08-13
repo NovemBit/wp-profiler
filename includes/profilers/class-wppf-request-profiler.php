@@ -10,15 +10,28 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 
 	public function init() {
 
-		preg_match_all( '/^.+$/m', $this->url_exclusions,$matches);
+		$this->registerEndpoints();
+		/*
+		 * Split exclusions string to array
+		 * */
+		preg_match_all( '/^.+$/m', $this->url_exclusions, $matches );
+
 		foreach ( $matches[0] as $exclusion ) {
-			$exclusion = trim($exclusion,' ');
-			$url = DevLogHelper::getActualUrlFromServer( $_SERVER );
+
+			/*
+			 * Clear whitespace
+			 * */
+			$exclusion = trim( $exclusion, ' ' );
+			$url       = DevLogHelper::getActualUrlFromServer( $_SERVER );
 			if ( preg_match( "/$exclusion/", $url ) ) {
-			    return;
+				return;
 			}
 		}
 
+		/*
+		 * Dont show profiler if
+		 * is wordpress ajax endpoint
+		 * */
 		if ( wp_doing_ajax() ) {
 			return;
 		}
@@ -30,6 +43,7 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 			?>
 
             <div id="<?php echo self::class; ?>" class="<?php echo self::class; ?>">
+                <div class="endpoint"></div>
                 <table>
                     <tr>
                         <td>
@@ -57,8 +71,22 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
                             Mem: <?php echo DevLogHelper::getMemUsageReadable( $data->getDataList()->getData( 'memory_usage' )->getValue() ); ?>
                         </td>
 
-                        <td>
-                            Messages: <?php echo count( $data->getMessageList()->getList() ); ?>
+                        <td class="messages">
+                            <div class="flybox">
+                                <table>
+									<?php foreach ( $data->getMessageList()->getList() as $key => $message ): ?>
+                                        <tr>
+                                            <td><?php echo $key; ?></td>
+                                            <td><?php echo $message->getType(); ?></td>
+                                            <td><?php echo $message->getMessage(); ?></td>
+                                            <td><?php echo $message->getCategory(); ?></td>
+                                        </tr>
+									<?php endforeach; ?>
+                                </table>
+                            </div>
+                            <a href="?<?php echo self::class . '_view=' . $data->getName(); ?>&action=messages">
+                                Messages: <?php echo count( $data->getMessageList()->getList() ); ?>
+                            </a>
                         </td>
                     </tr>
                 </table>
@@ -93,6 +121,20 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
                 #WPPF_Request_Profiler table td + td {
                     border-left: solid #000;
                 }
+
+                #WPPF_Request_Profiler .flybox {
+                    display: none;
+                    position: absolute;
+                    bottom: 35px;
+                    right: 0;
+                    width: 100%;
+                    height: 50vh;
+                    background: #616161;
+                }
+
+                #WPPF_Request_Profiler td.messages:hover .flybox {
+                    display: block;
+                }
             </style>
 
 			<?php
@@ -101,5 +143,32 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 
 	}
 
+
+	public function registerEndpoints() {
+		if ( isset( $_GET[ self::class . '_view' ] ) ) {
+			$this->endpointViewMessages( $_GET[ self::class . '_view' ] );
+			die();
+		}
+
+		return false;
+	}
+
+
+	public function endpointViewMessages( $log_name ) {
+		$log = \DevLog\DataMapper\Mappers\Log::get( [ 'data', 'messages' ], [
+			[
+				'logs.name',
+				'=',
+				$log_name
+			]
+		] )->one();
+
+		if ( isset( $_GET['action'] ) ) {
+			if ( $_GET['action'] == 'messages' ) {
+				var_dump( $log->getMessageList() );
+			}
+		}
+
+	}
 
 }

@@ -26,6 +26,11 @@ abstract class WPPF_Profiler_Base {
 		});
 	}
 
+	/**
+	 * Initialization
+	 * If isset Post of current class name
+	 * Then run profiling
+	 */
 	public function init() {
 		if ( isset( $_POST[ static::class ] ) ) {
 			$this->run();
@@ -34,6 +39,9 @@ abstract class WPPF_Profiler_Base {
 		}
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getName() {
 
 		if ( isset( $this->name ) ) {
@@ -46,6 +54,9 @@ abstract class WPPF_Profiler_Base {
 	}
 
 	public function run(){}
+
+
+
 
 //	abstract public static function view();
 
