@@ -5,6 +5,9 @@
     "logger",
     "debugger"
   ],
+  "license": [
+    "GPL-3.0-or-later"
+  ],
   "minimum-stability": "stable",
   "type": "project",
   "require": {
