@@ -39,6 +39,9 @@ class WPPF_Install {
 
 	}
 
+	/**
+	 * @return bool
+	 */
 	private static function uninstall_mu_plugin(){
 		$target = WPMU_PLUGIN_DIR . '/' . self::$filename;
 
@@ -55,6 +58,7 @@ class WPPF_Install {
 	private static function migration(){
 
 	    WPPF_Bootstrap::init();
+
 		DevLog\DataMapper\Migration::mysql();
 
     }

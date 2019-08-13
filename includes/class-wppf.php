@@ -21,7 +21,6 @@ final class WPPF {
 
 	public function __construct() {
 		$this->define_constants();
-//		$this->define_tables();
 		$this->includes();
 		$this->init_hooks();
 	}
