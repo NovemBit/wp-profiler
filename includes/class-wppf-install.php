@@ -6,8 +6,15 @@ class WPPF_Install {
 
 	private static $filename = 'wppf.php';
 
+	/**
+	 * @throws Exception
+	 */
 	public static function install() {
-		self::install_mu_plugin();
+
+	    self::migration();
+
+	    self::install_mu_plugin();
+
 	}
 
 	public function uninstall(){
@@ -42,5 +49,14 @@ class WPPF_Install {
 
 	}
 
+	/**
+	 * @throws Exception
+	 */
+	private static function migration(){
+
+	    WPPF_Bootstrap::init();
+		DevLog\DataMapper\Migration::mysql();
+
+    }
 
 }

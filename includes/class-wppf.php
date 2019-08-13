@@ -69,6 +69,8 @@ final class WPPF {
 	}
 
 	public function includes() {
+
+		include_once "class-wppf-bootstrap.php";
 		include_once "class-wppf-install.php";
 	}
 
