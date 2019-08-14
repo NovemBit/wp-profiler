@@ -7,44 +7,50 @@ abstract class WPPF_Profiler_Base {
 
 	public $name;
 
-	public function __construct($config) {
+	/**
+	 * WPPF_Profiler_Base constructor.
+	 *
+	 * @param $config
+	 */
+	public function __construct( $config ) {
 
-		foreach($config as $key=>$value){
+		foreach ( $config as $key => $value ) {
 			$this->{$key} = $value;
 		}
 	}
 
 	/**
 	 * Form to run profiler
+	 * Prepare method can be overwrite
 	 */
 	public function prepare() {
-		add_action('wp_footer',function() {
+		add_action( 'wp_footer', function () {
 			echo sprintf( '<form id="%s" class="%s" action="" method="post"><input type="submit" name="%s" value="%s"></form>',
 				static::class,
-				self::class . '_form '.static::class . '_form child_'.self::$_id,
+				self::class . '_form ' . static::class . '_form child_' . self::$_id,
 				static::class,
 				static::getName()
 			);
 			?>
 
-			<style>
-				.WPPF_Profiler_Base_form{
-					position:fixed;
-					left:10px;
-					bottom:35px;
-					margin-bottom:0;
-					z-index:999999;
-				}
-				
-				.WPPF_Profiler_Base_form input[type=submit]{
-					background:#8e0000;
-					border-radius:0;
-					font-size:12px;
-				}
-			</style>
+            <style>
+                .WPPF_Profiler_Base_form {
+                    position: fixed;
+                    left: 10px;
+                    bottom: 35px;
+                    margin-bottom: 0;
+                    z-index: 999999;
+                }
+
+                .WPPF_Profiler_Base_form input[type=submit] {
+                    background: #8e0000;
+                    border-radius: 0;
+                    font-size: 12px;
+                }
+            </style>
 
 			<?php
-		});
+		} );
 	}
 
 	/**
@@ -54,7 +60,7 @@ abstract class WPPF_Profiler_Base {
 	 */
 	public function init() {
 
-		self::$_id++;
+		self::$_id ++;
 
 		if ( isset( $_POST[ static::class ] ) ) {
 			$this->run();
@@ -77,6 +83,11 @@ abstract class WPPF_Profiler_Base {
 		return str_replace( '_', ' ', $name );
 	}
 
-	public function run(){}
+	/**
+	 * Method that runes profiler
+	 */
+	public function run() {
+		//TODO: run action of base class
+	}
 
 }

@@ -6,7 +6,7 @@
  * Version: 0.1
  * Author: Novembit
  * Author URI:
- * License: GPLv2
+ * License: GPLv3
  * Text Domain: wp-profiler
  */
 

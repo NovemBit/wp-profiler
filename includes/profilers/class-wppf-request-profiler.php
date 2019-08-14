@@ -1,4 +1,5 @@
 <?php
+
 defined( 'ABSPATH' ) || exit;
 
 use DevLog\DevLog;
@@ -8,6 +9,9 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 
 	public $url_exclusions = '';
 
+	/**
+	 * @throws Exception
+	 */
 	public function init() {
 
 		$this->registerEndpoints();
@@ -178,6 +182,12 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 	}
 
 
+	/**
+	 * Endpoint to show all data of
+	 * Current request
+	 * @return bool
+	 * @throws Exception
+	 */
 	public function registerEndpoints() {
 		if ( isset( $_GET[ self::class . '_view' ] ) ) {
 			$this->endpointViewMessages( $_GET[ self::class . '_view' ] );
@@ -188,6 +198,13 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 	}
 
 
+	/**
+	 * Messages endpoint
+	 *
+	 * @param $log_name
+	 *
+	 * @throws Exception
+	 */
 	public function endpointViewMessages( $log_name ) {
 		$log = \DevLog\DataMapper\Mappers\Log::get( [ 'data', 'messages' ], [
 			[
