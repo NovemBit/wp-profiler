@@ -3,6 +3,8 @@ defined( 'ABSPATH' ) || exit;
 
 abstract class WPPF_Profiler_Base {
 
+	private static $_id = 0;
+
 	public $name;
 
 	public function __construct($config) {
@@ -19,10 +21,29 @@ abstract class WPPF_Profiler_Base {
 		add_action('wp_footer',function() {
 			echo sprintf( '<form id="%s" class="%s" action="" method="post"><input type="submit" name="%s" value="%s"></form>',
 				static::class,
-				static::class . '_form',
+				self::class . '_form '.static::class . '_form child_'.self::$_id,
 				static::class,
 				static::getName()
 			);
+			?>
+
+			<style>
+				.WPPF_Profiler_Base_form{
+					position:fixed;
+					left:10px;
+					bottom:35px;
+					margin-bottom:0;
+					z-index:999999;
+				}
+				
+				.WPPF_Profiler_Base_form input[type=submit]{
+					background:#8e0000;
+					border-radius:0;
+					font-size:12px;
+				}
+			</style>
+
+			<?php
 		});
 	}
 
@@ -32,6 +53,9 @@ abstract class WPPF_Profiler_Base {
 	 * Then run profiling
 	 */
 	public function init() {
+
+		self::$_id++;
+
 		if ( isset( $_POST[ static::class ] ) ) {
 			$this->run();
 		} else {
@@ -54,10 +78,5 @@ abstract class WPPF_Profiler_Base {
 	}
 
 	public function run(){}
-
-
-
-
-//	abstract public static function view();
 
 }
