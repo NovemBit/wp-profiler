@@ -67,11 +67,11 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
                                 <table>
                                     <tr>
                                         <td>Start Time</td>
-                                        <td><?php echo $data->getDataList()->getData( 'start_time' )->getValue();?></td>
+                                        <td><?php echo $data->getDataList()->getData( 'start_time' )->getValue(); ?></td>
                                     </tr>
                                     <tr>
                                         <td>End Time</td>
-                                        <td><?php echo $data->getDataList()->getData( 'end_time' )->getValue();?></td>
+                                        <td><?php echo $data->getDataList()->getData( 'end_time' )->getValue(); ?></td>
                                     </tr>
                                 </table>
                             </div>
@@ -86,21 +86,21 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
                         <td class="messages">
                             <div class="flybox">
                                 <table>
-									<?php foreach ( $data->getMessageList()->getList() as $key => $message ):?>
+									<?php foreach ( $data->getMessageList()->getList() as $key => $message ): ?>
                                         <tr>
                                             <td><?php echo $key; ?></td>
                                             <td><?php echo $message->getType(); ?></td>
                                             <td><?php echo $message->getMessage(); ?></td>
                                             <td><?php echo $message->getCategory(); ?></td>
                                         </tr>
-                                        <?php  if($key == 50):?>
+										<?php if ( $key == 50 ): ?>
                                             <tr>
                                                 <td>...</td>
                                                 <td>...</td>
                                                 <td>...</td>
                                                 <td>View more...</td>
                                             </tr>
-                                        <?php break; endif;?>
+											<?php break; endif; ?>
 									<?php endforeach; ?>
                                 </table>
                             </div>
@@ -144,7 +144,7 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 
                 #WPPF_Request_Profiler .flybox {
                     display: none;
-                    overflow:auto;
+                    overflow: auto;
                     position: absolute;
                     bottom: 35px;
                     right: 0;
@@ -154,15 +154,20 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
                     background: #000000;
                 }
 
-                #WPPF_Request_Profiler .flybox table tr{
-                    border:solid 1px;
+                #WPPF_Request_Profiler .flybox table tr {
+                    border: solid 1px;
                 }
-                #WPPF_Request_Profiler .flybox table td{
-                    border:solid 1px;
+
+                #WPPF_Request_Profiler .flybox table td {
+                    border: solid 1px;
                 }
 
                 #WPPF_Request_Profiler table td:hover .flybox {
                     display: block;
+                }
+
+                #WPPF_Request_Profiler a {
+                    color: #ff9c9c;
                 }
             </style>
 
