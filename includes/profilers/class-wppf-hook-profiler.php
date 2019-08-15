@@ -56,9 +56,10 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 				$this->_mutex[ $name ] = true;
 
 
-				$hook->callbacks = array( PHP_INT_MIN => $hook->callbacks[ PHP_INT_MIN ] ?? array() ) + $hook->callbacks;
+				$hook->callbacks = array( 
+					PHP_INT_MIN => isset($hook->callbacks[ PHP_INT_MIN ]) ? $hook->callbacks[ PHP_INT_MIN ] : array() ) + $hook->callbacks;
 
-				$hook->callbacks[ PHP_INT_MAX ] = $hook->callbacks[ PHP_INT_MAX ] ?? [];
+				$hook->callbacks[ PHP_INT_MAX ] = isset($hook->callbacks[ PHP_INT_MAX ]) ? $hook->callbacks[ PHP_INT_MAX ] : array();
 
 				$hook->callbacks[ PHP_INT_MIN ] = array(
 					                                  'DevLog_hook_start' => array(

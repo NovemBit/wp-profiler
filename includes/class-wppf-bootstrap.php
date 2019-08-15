@@ -72,7 +72,7 @@ class WPPF_Bootstrap {
 				'username' => DB_USER,
 				'password' => DB_PASSWORD,
 				'config'   => [
-					\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false
+					PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false
 				]
 			) );
 		}

@@ -38,8 +38,8 @@ final class WPPF {
 	}
 
 	private function define_constants() {
-		$this->define( 'WPPF_ABSPATH', dirname( WC_PLUGIN_FILE ) . '/' );
-		$this->define( 'WPPF_PLUGIN_BASENAME', plugin_basename( WC_PLUGIN_FILE ) );
+		$this->define( 'WPPF_ABSPATH', dirname( WPPF_PLUGIN_FILE ) . '/' );
+		$this->define( 'WPPF_PLUGIN_BASENAME', plugin_basename( WPPF_PLUGIN_FILE ) );
 		$this->define( 'WPPF_VERSION', $this->version );
 	}
 
@@ -75,7 +75,7 @@ final class WPPF {
 
 
 	/**
-	 * @param $option
+	 * @param string $option
 	 * @param null $default
 	 *
 	 * @return array|mixed|void
