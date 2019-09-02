@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class WPPF {
 
-	public $version = '3.6.5';
+	public $version = '1.0.0';
 
 	private static $_instance = null;
 
@@ -23,6 +23,7 @@ final class WPPF {
 		$this->define_constants();
 		$this->includes();
 		$this->init_hooks();
+		$this->init_assets_version();
 	}
 
 	/**
@@ -41,6 +42,7 @@ final class WPPF {
 		$this->define( 'WPPF_ABSPATH', dirname( WPPF_PLUGIN_FILE ) . '/' );
 		$this->define( 'WPPF_PLUGIN_BASENAME', plugin_basename( WPPF_PLUGIN_FILE ) );
 		$this->define( 'WPPF_VERSION', $this->version );
+		$this->define( 'WPPF_PLUGIN_ACTIVE', true );
 	}
 
 	/**
@@ -55,7 +57,7 @@ final class WPPF {
 //		register_shutdown_function( array( $this, 'log_errors' ) );
 
 		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ), - 1 );
-		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'init', array( $this, 'init' ), PHP_INT_MAX - 10 );
 	}
 
 	public function on_plugins_loaded() {
@@ -64,13 +66,18 @@ final class WPPF {
 
 
 	public function init() {
-
+		if( is_admin() ){
+			WPPF_Admin_Manager::run();
+		}
 	}
 
 	public function includes() {
 
 		include_once "class-wppf-bootstrap.php";
 		include_once "class-wppf-install.php";
+		include_once "class-wppf-admin-manager.php";
+
+		include_once "views/class-wppf-admin-profiler-page.php";
 	}
 
 
@@ -104,4 +111,12 @@ final class WPPF {
 
 		return false;
 	}
+
+	/**
+	 * Setting up assets version
+	 */
+	private function init_assets_version() {
+		WPPF::setOption( 'assets_version', $this->version );
+	}
+
 }
