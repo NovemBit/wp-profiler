@@ -11,15 +11,16 @@ class WPPF_Admin_Manager {
 	 * @var bool
 	 */
 	private static $created = false;
+
 	/**
 	 * @throws LogicException
 	 *      in the case this method called more than once
 	 */
-	public static function run(){
-		if( false === self::$created ){
+	public static function run() {
+		if ( false === self::$created ) {
 			new self();
-		}else{
-			throw new LogicException('WPPF_Admin_Manager should only run once inside this plugin');
+		} else {
+			throw new LogicException( 'WPPF_Admin_Manager should only run once inside this plugin' );
 		}
 	}
 
@@ -28,8 +29,11 @@ class WPPF_Admin_Manager {
 		add_action( 'admin_enqueue_scripts', array( $this, 'on_hook_admin_enqueue_scripts' ) );
 	}
 
-	private function __clone() {}
-	private function __wakeup() {}
+	private function __clone() {
+	}
+
+	private function __wakeup() {
+	}
 
 	// endregion
 
@@ -38,7 +42,7 @@ class WPPF_Admin_Manager {
 	 * @see https://developer.wordpress.org/reference/hooks/admin_enqueue_scripts/
 	 */
 	function on_hook_admin_enqueue_scripts() {
-			$assets_version = WPPF::getOption( 'assets_version', '1.0.0' );
+		$assets_version = WPPF::getOption( 'assets_version', '1.0.0' );
 	}
 
 	// region Admin Menu
@@ -49,17 +53,20 @@ class WPPF_Admin_Manager {
 	 * Should only be called from hook admin_menu
 	 * @see https://developer.wordpress.org/reference/hooks/admin_menu/
 	 */
-	public function on_hook_admin_menu_setup(){
-		$slug = 'wppf';
+	public function on_hook_admin_menu_setup() {
+
+
 		// Admin menu WP Profiler page init
 		add_menu_page(
 			__( 'WP Profiler', 'wppf' ),
 			__( 'WP Profiler', 'wppf' ),
 			'manage_options',
-			$slug
+			WPPF::SLUG
 		);
 
-		new WPPF_Admin_Profiler_Page( $slug );
+		new WPPF_Admin_Settings_Page();
+		new WPPF_Admin_Profiler_List_Page();
+
 	}
 
 	// endregion

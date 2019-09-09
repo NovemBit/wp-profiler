@@ -17,7 +17,7 @@ class WPPF_Bootstrap {
 
 		DevLog::register();
 
-		foreach ( self::getActiveProfilerList() as $profiler ) {
+		foreach ( WPPF::getActiveProfilerList() as $profiler ) {
 
 			/*
 			 * Creating profiler object with config
@@ -30,16 +30,6 @@ class WPPF_Bootstrap {
 			call_user_func( [ $obj, 'init' ] );
 		}
 
-	}
-
-
-	/**
-	 * Getting all active profiler list
-	 * With array
-	 * @return string[]
-	 */
-	private static function getActiveProfilerList() {
-		return WPPF::getOption( 'active_profiler_list', [] );
 	}
 
 	/**

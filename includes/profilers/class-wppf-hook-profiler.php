@@ -5,13 +5,17 @@ use DevLog\DevLog;
 
 class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 
-
+	public static function getName() {
+		return __( 'Hook Profiler', 'wppf' );
+	}
 
 	public function run() {
 		self::retrieve_wp_hooks();
 	}
 
 	private $_mutex = [];
+
+	private $_temp_ = [];
 
 	/**
 	 * @param $a
@@ -20,6 +24,7 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 	 * @throws Exception
 	 */
 	public function hook_start( $a ) {
+		$this->_temp_[ current_filter() ] = microtime( true );
 		DevLog::log( 'S', current_filter(), '' );
 
 		return $a;
@@ -32,7 +37,12 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 	 * @throws Exception
 	 */
 	public function hook_end( $a ) {
-		DevLog::log( 'E', current_filter(), '' );
+		$diff = 0;
+		if ( isset( $this->_temp_[ current_filter() ] ) ) {
+			$diff = microtime( true ) - $this->_temp_[ current_filter() ];
+		}
+		DevLog::log( 'E', current_filter(), $diff );
+
 		self::retrieve_wp_hooks();
 
 		return $a;
@@ -56,10 +66,11 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 				$this->_mutex[ $name ] = true;
 
 
-				$hook->callbacks = array( 
-					PHP_INT_MIN => isset($hook->callbacks[ PHP_INT_MIN ]) ? $hook->callbacks[ PHP_INT_MIN ] : array() ) + $hook->callbacks;
+				$hook->callbacks = array(
+					                   PHP_INT_MIN => isset( $hook->callbacks[ PHP_INT_MIN ] ) ? $hook->callbacks[ PHP_INT_MIN ] : array()
+				                   ) + $hook->callbacks;
 
-				$hook->callbacks[ PHP_INT_MAX ] = isset($hook->callbacks[ PHP_INT_MAX ]) ? $hook->callbacks[ PHP_INT_MAX ] : array();
+				$hook->callbacks[ PHP_INT_MAX ] = isset( $hook->callbacks[ PHP_INT_MAX ] ) ? $hook->callbacks[ PHP_INT_MAX ] : array();
 
 				$hook->callbacks[ PHP_INT_MIN ] = array(
 					                                  'DevLog_hook_start' => array(
@@ -131,4 +142,11 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 			);
 		}
 	}
+
+
+	public function endpointChart( $log_name ) {
+
+	}
+
+
 }

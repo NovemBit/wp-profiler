@@ -2,12 +2,25 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use DevLog\DataMapper\Mappers\Log;
 use DevLog\DevLog;
 use DevLog\DevLogHelper;
 
 class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 
+	public static function getName() {
+		return __( 'Request Profiler', 'wppf' );
+	}
+
 	public $url_exclusions = '';
+
+	public static function formFields() {
+
+		return [
+			'url_exclusions' => [ 'type' => 'textarea' ]
+		];
+
+	}
 
 	/**
 	 * @throws Exception
@@ -15,6 +28,7 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 	public function init() {
 
 		$this->registerEndpoints();
+
 		/*
 		 * Split exclusions string to array
 		 * */
@@ -108,7 +122,7 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 									<?php endforeach; ?>
                                 </table>
                             </div>
-                            <a href="?<?php echo self::class . '_view=' . $data->getName(); ?>&action=messages">
+                            <a href="?<?php echo self::class . '_view&endpoint=ViewMessages&log_name=' . $data->getName(); ?>">
                                 Messages: <?php echo count( $data->getMessageList()->getList() ); ?>
                             </a>
                         </td>
@@ -183,22 +197,6 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 
 
 	/**
-	 * Endpoint to show all data of
-	 * Current request
-	 * @return bool
-	 * @throws Exception
-	 */
-	public function registerEndpoints() {
-		if ( isset( $_GET[ self::class . '_view' ] ) ) {
-			$this->endpointViewMessages( $_GET[ self::class . '_view' ] );
-			die();
-		}
-
-		return false;
-	}
-
-
-	/**
 	 * Messages endpoint
 	 *
 	 * @param $log_name
@@ -206,7 +204,8 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 	 * @throws Exception
 	 */
 	public function endpointViewMessages( $log_name ) {
-		$log = \DevLog\DataMapper\Mappers\Log::get( [ 'data', 'messages' ], [
+
+		$log = Log::get( [ 'data', 'messages' ], [
 			[
 				'logs.name',
 				'=',
@@ -214,12 +213,14 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 			]
 		] )->one();
 
-		if ( isset( $_GET['action'] ) ) {
-			if ( $_GET['action'] == 'messages' ) {
-				var_dump( $log->getMessageList() );
-			}
-		}
+		$logs = $log->getMessageList()->getList();
 
+		foreach ( $logs as $log ){
+		    if( $log->getType() === 'E' ){
+		        var_dump( array( $log->getMessage(), number_format( $log->getCategory(), 7 ) ) );
+            }
+        }
 	}
+
 
 }

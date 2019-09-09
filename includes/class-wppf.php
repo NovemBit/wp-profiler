@@ -4,6 +4,11 @@ defined( 'ABSPATH' ) || exit;
 
 final class WPPF {
 
+	const SLUG = "wppf";
+
+	const PROFILER_ACTIVE = 1;
+	const PROFILER_INACTIVE=0;
+
 	public $version = '1.0.0';
 
 	private static $_instance = null;
@@ -52,7 +57,7 @@ final class WPPF {
 	 */
 	private function init_hooks() {
 		register_activation_hook( WPPF_PLUGIN_FILE, array( 'WPPF_Install', 'install' ) );
-		register_deactivation_hook(WPPF_PLUGIN_FILE, array( 'WPPF_Install', 'uninstall' ));
+		register_deactivation_hook( WPPF_PLUGIN_FILE, array( 'WPPF_Install', 'uninstall' ) );
 
 //		register_shutdown_function( array( $this, 'log_errors' ) );
 
@@ -66,7 +71,7 @@ final class WPPF {
 
 
 	public function init() {
-		if( is_admin() ){
+		if ( is_admin() ) {
 			WPPF_Admin_Manager::run();
 		}
 	}
@@ -76,8 +81,8 @@ final class WPPF {
 		include_once "class-wppf-bootstrap.php";
 		include_once "class-wppf-install.php";
 		include_once "class-wppf-admin-manager.php";
-
-		include_once "views/class-wppf-admin-profiler-page.php";
+		include_once "views/class-wppf-admin-settings-page.php";
+		include_once "views/class-wppf-admin-profiler-list-page.php";
 	}
 
 
@@ -87,12 +92,24 @@ final class WPPF {
 	 *
 	 * @return array|mixed|void
 	 */
-	public static function getOption($option, $default = null){
-		$option = self::class."_".$option;
-		if(defined($option)){
-			return constant($option);
+	public static function getOption( $option, $default = null ) {
+		if ( self::isOptionConstant( $option ) ) {
+			return constant( self::class . "_" . $option );
 		}
-		return get_option($option,$default);
+
+		return get_option( self::class . "_" . $option, $default );
+	}
+
+
+	/**
+	 * @param $option
+	 *
+	 * @return bool
+	 */
+	public static function isOptionConstant( $option ) {
+		$option = self::class . "_" . $option;
+
+		return defined( $option );
 	}
 
 	/**
@@ -101,15 +118,56 @@ final class WPPF {
 	 *
 	 * @return bool
 	 */
-	public static function setOption($option,$value){
+	public static function setOption( $option, $value ) {
 
-		$option = self::class."_".$option;
+		$option = self::class . "_" . $option;
 
-		if(update_option($option,$value)){
+		if ( update_option( $option, $value ) ) {
 			return true;
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param $profiler
+	 *
+	 * @return bool
+	 */
+	public static function isActiveProfiler( $profiler ) {
+		return in_array( $profiler, self::getAllProfilerList() ) && in_array( $profiler, self::getActiveProfilerList() );
+	}
+
+	public static function getActiveProfilerList() {
+		return WPPF::getOption( 'active_profiler_list', [] );
+	}
+
+	public static function getAllProfilerList() {
+		return [
+			WPPF_Hook_Profiler::class,
+			WPPF_Request_Profiler::class
+		];
+	}
+
+	/**
+	 * @param $profiler
+	 * @param bool $status
+	 */
+	public static function setProfilerStatus( $profiler, $status ) {
+
+		$active_profiler_list = WPPF::getActiveProfilerList();
+
+		$active_profiler_list = array_unique($active_profiler_list);
+
+		if ( !in_array( $profiler, $active_profiler_list ) && $status === self::PROFILER_ACTIVE ) {
+			$active_profiler_list[] = $profiler;
+		} elseif(in_array( $profiler, $active_profiler_list ) && $status === self::PROFILER_INACTIVE){
+			if (($key = array_search($profiler, $active_profiler_list)) !== false) {
+				unset($active_profiler_list[$key]);
+			}
+		}
+
+		WPPF::setOption( 'active_profiler_list', $active_profiler_list );
 	}
 
 	/**

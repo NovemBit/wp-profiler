@@ -15,6 +15,9 @@ class WPPF_Install {
 
 	    self::install_mu_plugin();
 
+		WPPF::setProfilerStatus( WPPF_Hook_Profiler::class, WPPF::PROFILER_ACTIVE );
+		WPPF::setProfilerStatus( WPPF_Request_Profiler::class, WPPF::PROFILER_ACTIVE );
+
 	}
 
 	public function uninstall(){
