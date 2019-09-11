@@ -71,18 +71,19 @@ final class WPPF {
 
 
 	public function init() {
+		new WPPF_Admin_Bar();
 		if ( is_admin() ) {
 			WPPF_Admin_Manager::run();
 		}
 	}
 
 	public function includes() {
-
 		include_once "class-wppf-bootstrap.php";
 		include_once "class-wppf-install.php";
 		include_once "class-wppf-admin-manager.php";
 		include_once "views/class-wppf-admin-settings-page.php";
 		include_once "views/class-wppf-admin-profiler-list-page.php";
+		include_once "views/class-wppf-admin-bar.php";
 	}
 
 

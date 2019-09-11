@@ -15,7 +15,6 @@ abstract class WPPF_Profiler_Base {
 	 * @param $config
 	 */
 	public function __construct( $config ) {
-
 		foreach ( $config as $key => $value ) {
 			$this->{$key} = $value;
 		}
@@ -26,33 +25,22 @@ abstract class WPPF_Profiler_Base {
 	 * Prepare method can be overwrite
 	 */
 	public function prepare() {
-		add_action( 'wp_footer', function () {
-			echo sprintf( '<form id="%s" class="%s" action="" method="post"><input type="submit" name="%s" value="%s"></form>',
-				static::class,
-				self::class . '_form ' . static::class . '_form child_' . self::$_id,
-				static::class,
-				static::getName()
-			);
-			?>
-
-            <style>
-                .WPPF_Profiler_Base_form {
-                    position: fixed;
-                    left: 10px;
-                    bottom: 35px;
-                    margin-bottom: 0;
-                    z-index: 999999;
-                }
-
-                .WPPF_Profiler_Base_form input[type=submit] {
-                    background: #8e0000;
-                    border-radius: 0;
-                    font-size: 12px;
-                }
-            </style>
-
-			<?php
-		} );
+	    add_action( 'wppf_admin_bar', function(  ){
+	        global $wp_admin_bar;
+		    $wp_admin_bar->add_menu( array(
+			    'parent' => 'wppf_admin_bar',
+			    'id' => 'run_hook_profiler',
+			    'title' => __('Hook profiler'),
+			    'href' => '',
+                'meta'=> array( 'html' => sprintf( '<form id="%s" class="%s" action="" method="post"><input type="submit" name="%s" value="%s" class="%s"></form>',
+	                static::class,
+	                self::class . '_form ' . static::class . '_form child_' . self::$_id,
+	                static::class,
+	                "Run",
+                    "button button-primary"
+                )),
+		    ) );
+        } );
 	}
 
 	/**
@@ -91,7 +79,6 @@ abstract class WPPF_Profiler_Base {
 	 * Method that runes profiler
 	 */
 	public function run() {
-		//TODO: run action of base class
 	}
 
 	/**
@@ -115,10 +102,9 @@ abstract class WPPF_Profiler_Base {
 	 * @throws ReflectionException
 	 * @throws Exception
 	 */
-	public function registerEndpoints() {
+	public static function registerEndpoints() {
 
-		$modelReflector = new ReflectionClass( $this );
-		$methods        = $modelReflector->getMethods();
+		$modelReflector = new ReflectionClass( static::class );
 		if ( isset( $_GET[ static::class . '_view' ] ) && isset( $_GET['endpoint'] ) ) {
 
 			$action = $_GET['endpoint'];
@@ -134,7 +120,7 @@ abstract class WPPF_Profiler_Base {
 					$values[] = $_GET[ $parameter->getName() ];
 				}
 
-				call_user_func_array( array( $this, $method->name ), $values );
+				call_user_func_array( array( static::class, $method->name ), $values );
 				die;
 			}
 
@@ -242,4 +228,26 @@ abstract class WPPF_Profiler_Base {
 		<?php submit_button( 'Save Changes', 'primary', 'submit', true, array() );
 	}
 
+	public static $layout = "index.php";
+
+	public function render($file, $params = [], $root = false){
+
+		$file = __DIR__.'/../views/templates/'.$file.'.php';
+
+		foreach($params as $key=>$param){
+		    ${$key} = $param;
+        }
+
+		ob_start();
+	    include_once($file);
+		$content = ob_get_contents();
+		ob_clean();
+
+	    if($root==false){
+	        include_once __DIR__."/../views/layouts/".static::$layout;
+        } else{
+	        echo $content;
+        }
+
+    }
 }

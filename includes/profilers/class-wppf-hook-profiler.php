@@ -1,6 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
+use DevLog\DataMapper\Mappers\Log;
 use DevLog\DevLog;
 
 class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
@@ -11,7 +12,18 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 
 	public function run() {
 		self::retrieve_wp_hooks();
+		add_action( 'wppf_admin_bar', function () {
+			global $wp_admin_bar;
+			$wp_admin_bar->add_menu( array(
+				'parent' => 'wppf_admin_bar',
+				'id'     => 'view_hook_profiler_results',
+				'title'  => __( 'View Results' ),
+				'href'   => 'page-hook-profiler.php?' . self::class . '_view&endpoint=Results&log_name=' . DevLog::getLogHash(),
+				'meta'   => array( 'target' => '_blank' )
+			) );
+		} );
 	}
+
 
 	private $_mutex = [];
 
@@ -144,9 +156,27 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 	}
 
 
-	public function endpointChart( $log_name ) {
+	/**
+	 * @param $log_name
+	 *
+	 * @throws Exception
+	 */
+	public static function endpointResults( $log_name ) {
+
+		$log = Log::get( [ 'data', 'messages' ], [
+			[
+				'logs.name',
+				'=',
+				$log_name
+			]
+		] )->one();
+
+
+
+		self::render('page-hook-profiler', [
+			'log'=>$log,
+		]);
 
 	}
-
 
 }

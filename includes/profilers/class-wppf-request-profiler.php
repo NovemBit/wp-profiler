@@ -27,7 +27,7 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 	 */
 	public function init() {
 
-		$this->registerEndpoints();
+		self::registerEndpoints();
 
 		/*
 		 * Split exclusions string to array
@@ -203,23 +203,9 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 	 *
 	 * @throws Exception
 	 */
-	public function endpointViewMessages( $log_name ) {
+	public static function endpointViewMessages( $log_name ) {
 
-		$log = Log::get( [ 'data', 'messages' ], [
-			[
-				'logs.name',
-				'=',
-				$log_name
-			]
-		] )->one();
 
-		$logs = $log->getMessageList()->getList();
-
-		foreach ( $logs as $log ){
-		    if( $log->getType() === 'E' ){
-		        var_dump( array( $log->getMessage(), number_format( $log->getCategory(), 7 ) ) );
-            }
-        }
 	}
 
 
