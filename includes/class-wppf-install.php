@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 class WPPF_Install {
 
-	private static $filename = 'wppf.php';
+	private static $filename = '00000001_wppf.php';
 
 	/**
 	 * @throws Exception
@@ -26,8 +26,12 @@ class WPPF_Install {
 
 	private static function install_mu_plugin() {
 
-		$source = dirname( __FILE__ ) . '/../mu-plugins/' . self::$filename;
+		$source = dirname( __FILE__ ) . '/../mu-plugins/wppf.php';
 		$target = WPMU_PLUGIN_DIR . '/' . self::$filename;
+
+		if(!file_exists(WPMU_PLUGIN_DIR) || !is_dir(WPMU_PLUGIN_DIR)){
+		    mkdir(WPMU_PLUGIN_DIR);
+        }
 
 		if ( ! copy( $source, $target ) ) {
 			add_action( 'admin_notices', function () {
