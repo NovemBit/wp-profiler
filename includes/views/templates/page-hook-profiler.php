@@ -5,7 +5,6 @@ use DevLog\DataMapper\Models\Log;
 
 $labels        = array();
 $diff          = array();
-$colors        = array();
 $border_colors = array();
 $callback_diff = array();
 
@@ -15,6 +14,7 @@ $messages = $log->getMessageList()->getList();
 $start = null;
 
 foreach ( $messages as $key => $message ) {
+
 	if ( $message->getType() === 'S' && $messages[ $key + 1 ]->getType() === 'C' ) {
 		if ( ! empty( $callback_diff ) ) {
 			foreach ( $callback_diff as $index => $item ) {
@@ -72,26 +72,16 @@ foreach ( $messages as $key => $message ) {
 	}
 }
 
-
 foreach ( $messages as $key => $message ) {
 	if ( $message->getType() === 'E' ) {
-//		if ( $message->getCategory() < 0.001 ) {
-//			continue;
-//		}
+		if ( $message->getCategory() < 0.001 ) {
+			continue;
+		}
 		$labels[]        = $message->getMessage();
 		$diff[]          = number_format( $message->getCategory(), 7 );
 		$num             = mt_rand( 0, 255 );
-		$colors[]        = getColor( $num );
 		$border_colors[] = getBorderColor( $num );
 	}
-}
-
-
-function getColor( $num ) {
-	$hash = md5( 'color' . $num ); // modify 'color' to get a different palette
-
-	return 'rgba( ' . hexdec( substr( $hash, 0, 2 ) ) . ', ' . hexdec( substr( $hash, 2, 2 ) ) . ', ' . hexdec( substr( $hash, 4, 2 ) ) . ', 0.2 )';
-
 }
 
 function getBorderColor( $num ) {
@@ -103,25 +93,6 @@ function getBorderColor( $num ) {
 
 ?>
 
-<style>
-
-    .ggl-tooltip {
-        border: 1px solid #E0E0E0;
-        font-family: Arial, Helvetica;
-        font-size: 10pt;
-        padding: 12px 12px 12px 12px;
-    }
-
-    .ggl-tooltip div {
-        padding: 6px 6px 6px 6px;
-    }
-
-    .ggl-tooltip span {
-        font-weight: bold;
-    }
-
-</style>
-
 <script type="application/javascript">
 
     var filter_diff = <?php echo json_encode( $diff ); ?>;
@@ -129,91 +100,98 @@ function getBorderColor( $num ) {
     var callback_diff = <?php echo json_encode( $callback_diff );?>;
 
 
-    var ctx = document.getElementById('WPPFChart');
-    var WPPFChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Filters Diff',
-                data: filter_diff,
-                backgroundColor: <?php echo json_encode( $colors );?>,
-                borderColor: <?php echo json_encode( $border_colors );?>,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
+//region Filters chart
+    Chart.defaults.timeline = Chart.defaults.horizontalBar;
+    Chart.controllers.timeline = Chart.controllers.horizontalBar.extend({
+        initialize: function() {
+            return Chart.controllers.bar.prototype.initialize.apply(this, arguments);
+        }
+    });
+
+    Chart.pluginService.register({
+        beforeInit: function(chart) {
+            if (chart.config.type === 'timeline') {
+                var config = chart.config;
+
+                var min = 0;
+                var max = 0;
+                filter_diff.forEach( function( filter ){
+                    max += parseFloat(filter);
+                } );
+
+                config.options.scales.xAxes[0].ticks.min = min;
+                config.options.scales.xAxes[0].ticks.max = max;
+
+                var whiteDiff = [];
+
+                filter_diff.forEach(function(e,i) {
+                    if( i == 0 ){
+                        whiteDiff.push(0);
+                    }else {
+                        whiteDiff.push(parseFloat(filter_diff[i-1]) + whiteDiff[i-1]);
                     }
-                }]
+
+                });
+
+                config.data.datasets.unshift({
+                    label: 'With Timeline',
+                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                    data: whiteDiff
+                });
             }
         }
     });
 
-    google.charts.load('current', {'packages': ['timeline']});
-    google.charts.setOnLoadCallback(drawChart);
+    var config = {
+        type: 'timeline',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Filters Diff',
+                backgroundColor: <?php echo json_encode( $border_colors );?>,
+                data: filter_diff
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    stacked: true
+                }],
+                yAxes: [{
+                    stacked: true,
+                    categoryPercentage: 0.5,
+                    barPercentage: 1
+                }]
+            },
+            tooltips:{
+                enabled: true,
+                mode: 'single',
+                callbacks: {
+                    label: function(tooltipItems, data) {
+                        // return tooltipItems.yLabel + ' : ' + tooltipItems.xLabel + " Files";
+                        return tooltipItems.xLabel;
+                    }
+                }
+            }
+        }
+    };
 
-    function drawChart() {
-        var container = document.getElementById('timeline');
-        var chart = new google.visualization.Timeline(container);
-        var dataTable = new google.visualization.DataTable();
+    var ctx = document.getElementById("WPPFChart").getContext("2d");
+    ctx.scale(2, 2);
+    var WPPFChart = new Chart(ctx, config);
 
-        dataTable.addColumn({type: 'string', id: 'Hooks'});
-        dataTable.addColumn({type: 'string', id: 'Name'});
-        dataTable.addColumn({type: 'string', role: 'tooltip','p': {'html': true} });
-        dataTable.addColumn({type: 'number', id: 'Start'});
-        dataTable.addColumn({type: 'number', id: 'End'});
+//endregion
+        console.log( callback_diff )
+    ctx.canvas.addEventListener('click', function (e) {
+        var activeElement = WPPFChart.getElementAtEvent(e);
+        var index = activeElement[0]['_index'];
 
-        var rows = [];
-        var tmp = 0;
-        filter_diff.forEach(function (filter, index) {
-            if (index === 0) {
-                rows.push(['Start - End', labels[index],'', 0, parseFloat(filter)]);
-                tmp += parseFloat(filter);
-            } else {
-                rows.push(['Start - End', labels[index],'', tmp, tmp + parseFloat(filter)]);
-                tmp += parseFloat(filter);
+        callback_diff.forEach(function( e, i ){
+            if( e[0] == labels[index] ){
+                console.log( e )
             }
         });
 
-        dataTable.addRows(rows);
-
-
-        for (var i = 0; i < dataTable.getNumberOfRows(); i++) {
-            var duration = dataTable.getValue(i, 4) - dataTable.getValue(i, 3);
-
-            var tooltip =
-                '<div class="ggl-tooltip">' +
-                    '<span>' +
-                        dataTable.getValue(i, 1) + '' +
-                    '</span>' +
-                '</div>' +
-                '<div class="ggl-tooltip">' +
-                    '<span>' +
-                        dataTable.getValue(i, 0) +
-                    '</span>: ' +
-                    dataTable.getValue(i, 3) + ' - ' +
-                    dataTable.getValue(i, 4) +
-                '</div>' +
-                '<div class="ggl-tooltip"><span>Duration: </span>' + duration + 's </div>';
-
-            dataTable.setValue(i, 2, tooltip);
-        }
-
-        chart.draw(dataTable, {
-            tooltip: {isHtml: true},
-            legend: 'none'
-        });
-    }
-
-    ctx.addEventListener('click', function (e) {
-        var activeElement = WPPFChart.getElementAtEvent(e);
-        var index = activeElement[0]['_index'];
-        console.log(labels[index])
-        console.log(callback_diff)
     });
 
 

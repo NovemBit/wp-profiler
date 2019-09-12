@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/NovemBit/dev-log.git",
-                "reference": "ba8492398dfc5d27402d89f63605eff778c55f07"
+                "reference": "ac9eead1cd7e28bb6ff97c7607d2cb25f715fff8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NovemBit/dev-log/zipball/ba8492398dfc5d27402d89f63605eff778c55f07",
-                "reference": "ba8492398dfc5d27402d89f63605eff778c55f07",
+                "url": "https://api.github.com/repos/NovemBit/dev-log/zipball/ac9eead1cd7e28bb6ff97c7607d2cb25f715fff8",
+                "reference": "ac9eead1cd7e28bb6ff97c7607d2cb25f715fff8",
                 "shasum": ""
             },
             "require": {
@@ -37,7 +37,7 @@
                 "debugger",
                 "logger"
             ],
-            "time": "2019-09-02T09:12:30+00:00"
+            "time": "2019-09-11T12:52:41+00:00"
         }
     ],
     "packages-dev": [],
