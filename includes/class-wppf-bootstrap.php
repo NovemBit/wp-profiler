@@ -1,30 +1,37 @@
 <?php
+/**
+ * Bootstrap class
+ *
+ * @package WPPF
+ * */
 
 defined( 'ABSPATH' ) || exit;
 
-use DevLog\DevLog;
-
+/**
+ * Bootstrap class
+ * */
 class WPPF_Bootstrap {
 
+
 	/**
-	 * @throws Exception
+	 * Init method
+	 *
+	 * Exception
+	 *
+	 * Exception @throws Exception
 	 */
 	public static function init() {
-
 		self::includeFiles();
 
 		self::defineConstants();
 
-		DevLog::register();
-
 		foreach ( WPPF::getActiveProfilerList() as $profiler ) {
-
-			/*
+			/**
 			 * Creating profiler object with config
 			 * */
-			$obj = new $profiler( WPPF::getOption( $profiler . "_config", [] ) );
+			$obj = new $profiler( WPPF::getOption( $profiler . '_config', [] ) );
 
-			/*
+			/**
 			 * Calling init method of profiler
 			 * */
 			call_user_func( [ $obj, 'init' ] );
@@ -32,39 +39,48 @@ class WPPF_Bootstrap {
 
 	}
 
+
 	/**
 	 * Include composer file
 	 */
 	private static function includeFiles() {
-
 		/*
 		 * Include composer vendor autoload.php file
-		 * */
-		include_once dirname( __FILE__ ) . "/../vendor/autoload.php";
+		*/
+		include_once dirname( __FILE__ ) . '/../vendor/autoload.php';
 
-		include_once "class-wppf.php";
-		include_once "profilers/class-wppf-profiler-base.php";
-		include_once "profilers/class-wppf-hook-profiler.php";
-		include_once "profilers/class-wppf-request-profiler.php";
+		/**
+		 * Check if yii framework not initialized
+		 */
+		if ( ! class_exists( 'Yii' ) ) {
+			defined( 'YII_DEBUG' ) || define( 'YII_DEBUG', false );
+			defined( 'YII_ENV' ) || define( 'YII_ENV', 'prod' );
+			include __DIR__ . '/../vendor/yiisoft/yii2/Yii.php';
+		}
+		include __DIR__ . '/models/class-wppf-active-record.php';
+		include __DIR__ . '/models/class-wppf-request-model.php';
+
+		include_once 'class-wppf.php';
+		include_once 'profilers/class-wppf-profiler-base.php';
+		include_once 'profilers/class-wppf-hook-profiler.php';
+		include_once 'profilers/class-wppf-request-profiler.php';
+
 	}
+
 
 	/**
 	 * Define constants
 	 */
 	private static function defineConstants() {
 
-		/*
-		 * Connect WP database to DevLog Profiler
-		 * */
-		if ( ! defined( 'DEV_LOG_DB' ) ) {
-			define( 'DEV_LOG_DB', array(
-				'pdo'      => 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME,
-				'username' => DB_USER,
-				'password' => DB_PASSWORD,
-				'config'   => [
-					PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false
-				]
-			) );
+		$request = new WPPF_Request_model();
+		$request->time = microtime(true);
+
+		if($request->save()) {
+			define( 'WPPF_REQUEST_ID', $request->id );
 		}
+
 	}
+
+
 }
