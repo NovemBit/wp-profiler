@@ -1,16 +1,13 @@
 <?php
-/**
- * Bootstrap class
- *
- * @package WPPF
- * */
+namespace WPPF;
 
-defined( 'ABSPATH' ) || exit;
+use Exception;
+use WPPF\models\Request;
 
 /**
  * Bootstrap class
  * */
-class WPPF_Bootstrap {
+class Bootstrap {
 
 
 	/**
@@ -29,7 +26,10 @@ class WPPF_Bootstrap {
 			/**
 			 * Creating profiler object with config
 			 * */
-			$obj = new $profiler( WPPF::getOption( $profiler . '_config', [] ) );
+			$class = "\\WPPF\\profilers\\".$profiler;
+
+			$obj = new $class( WPPF::getOption( $profiler . '_config', [] ) );
+
 
 			/**
 			 * Calling init method of profiler
@@ -44,11 +44,6 @@ class WPPF_Bootstrap {
 	 * Include composer file
 	 */
 	private static function includeFiles() {
-		/*
-		 * Include composer vendor autoload.php file
-		*/
-		include_once dirname( __FILE__ ) . '/../vendor/autoload.php';
-
 		/**
 		 * Check if yii framework not initialized
 		 */
@@ -57,13 +52,6 @@ class WPPF_Bootstrap {
 			defined( 'YII_ENV' ) || define( 'YII_ENV', 'prod' );
 			include __DIR__ . '/../vendor/yiisoft/yii2/Yii.php';
 		}
-		include __DIR__ . '/models/class-wppf-active-record.php';
-		include __DIR__ . '/models/class-wppf-request-model.php';
-
-		include_once 'class-wppf.php';
-		include_once 'profilers/class-wppf-profiler-base.php';
-		include_once 'profilers/class-wppf-hook-profiler.php';
-		include_once 'profilers/class-wppf-request-profiler.php';
 
 	}
 
@@ -73,7 +61,7 @@ class WPPF_Bootstrap {
 	 */
 	private static function defineConstants() {
 
-		$request = new WPPF_Request_model();
+		$request = new Request();
 		$request->time = microtime(true);
 
 		if($request->save()) {

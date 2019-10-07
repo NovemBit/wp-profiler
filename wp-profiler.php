@@ -10,12 +10,12 @@
  * Text Domain: wp-profiler
  */
 
+use WPPF\WPPF;
+
 defined( 'ABSPATH' ) || exit;
 
 // Include the main WPPF class.
-if ( ! class_exists( 'WPPF' ) ) {
-	include_once dirname( __FILE__ ) . '/includes/class-wppf.php';
-}
+include_once dirname( __FILE__ ) . '/vendor/autoload.php';
 
 // Define WPPF_PLUGIN_FILE.
 if ( ! defined( 'WPPF_PLUGIN_FILE' ) ) {

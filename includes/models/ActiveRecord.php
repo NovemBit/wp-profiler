@@ -1,12 +1,13 @@
 <?php
 
-use yii\db\ActiveRecord;
+namespace WPPF\models;
+
 use yii\db\Connection;
 
 /**
  * Yii ActiveRecord
  * */
-class WPPF_active_record extends ActiveRecord {
+class ActiveRecord extends \yii\db\ActiveRecord {
 
 	private static $_connection;
 	/**

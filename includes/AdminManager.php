@@ -1,10 +1,11 @@
 <?php
 
-if ( ! defined( 'WPPF_PLUGIN_ACTIVE' ) ) {
-	exit;
-}
+namespace WPPF;
 
-class WPPF_Admin_Manager {
+use WPPF\views\AdminProfilerListPage;
+use WPPF\views\AdminSettingsPage;
+
+class AdminManager {
 	// region Singleton
 
 	/**
@@ -13,14 +14,14 @@ class WPPF_Admin_Manager {
 	private static $created = false;
 
 	/**
-	 * @throws LogicException
+	 * @throws \Exception
 	 *      in the case this method called more than once
 	 */
 	public static function run() {
 		if ( false === self::$created ) {
 			new self();
 		} else {
-			throw new LogicException( 'WPPF_Admin_Manager should only run once inside this plugin' );
+			throw new \Exception( 'WPPF_Admin_Manager should only run once inside this plugin' );
 		}
 	}
 
@@ -64,8 +65,8 @@ class WPPF_Admin_Manager {
 			WPPF::SLUG
 		);
 
-		new WPPF_Admin_Settings_Page();
-		new WPPF_Admin_Profiler_List_Page();
+		new AdminSettingsPage();
+		new AdminProfilerListPage();
 
 	}
 

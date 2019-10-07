@@ -1,8 +1,14 @@
 <?php
+namespace WPPF;
+
+use WPPF\profilers\Hook;
+use WPPF\profilers\Profiler;
+use WPPF\profilers\Request;
+use WPPF\views\AdminBar;
 
 defined( 'ABSPATH' ) || exit;
 
-final class WPPF {
+class WPPF {
 
 	const SLUG = "wppf";
 
@@ -26,7 +32,6 @@ final class WPPF {
 
 	public function __construct() {
 		$this->define_constants();
-		$this->includes();
 		$this->init_hooks();
 		$this->init_assets_version();
 	}
@@ -70,22 +75,15 @@ final class WPPF {
 	}
 
 
+	/**
+	 * @throws \Exception
+	 */
 	public function init() {
-		new WPPF_Admin_Bar();
+		new AdminBar();
 		if ( is_admin() ) {
-			WPPF_Admin_Manager::run();
+			AdminManager::run();
 		}
 	}
-
-	public function includes() {
-		include_once "class-wppf-bootstrap.php";
-		include_once "class-wppf-install.php";
-		include_once "class-wppf-admin-manager.php";
-		include_once "views/class-wppf-admin-settings-page.php";
-		include_once "views/class-wppf-admin-profiler-list-page.php";
-		include_once "views/class-wppf-admin-bar.php";
-	}
-
 
 	/**
 	 * @param string $option
@@ -143,10 +141,13 @@ final class WPPF {
 		return WPPF::getOption( 'active_profiler_list', [] );
 	}
 
+	/**
+	 * @return Profiler[]
+	 */
 	public static function getAllProfilerList() {
 		return [
-			WPPF_Hook_Profiler::class,
-			WPPF_Request_Profiler::class
+			Hook::className(),
+			Request::className()
 		];
 	}
 

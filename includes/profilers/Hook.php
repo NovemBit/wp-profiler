@@ -1,17 +1,25 @@
 <?php
-defined( 'ABSPATH' ) || exit;
 
-class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
+namespace WPPF\profilers;
+
+use Exception;
+use ReflectionFunction;
+use WP_Hook;
+
+class Hook extends Profiler {
+
+	const PREFIX = "WPPF_HP_";
 
 	public static function getName() {
 		return __( 'Hook Profiler', 'wppf' );
 	}
 
+	/**
+	 * @throws \yii\db\Exception
+	 */
 	public function run() {
 
-		include __DIR__ . '/hook-profiler/models/class-wppf-hook-profiler-model.php';
-
-		$transaction = WPPF_Hook_profiler_model::getDb()->beginTransaction();
+		$transaction = hook\models\Hook::getDb()->beginTransaction();
 
 		self::retrieve_wp_hooks();
 
@@ -25,7 +33,7 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 					'parent' => 'wppf_admin_bar',
 					'id'     => 'view_hook_profiler_results',
 					'title'  => __( 'View Results' ),
-					'href'   => 'page-hook-profiler.php?' . self::class . '_view&endpoint=Results&log_name=' . DevLog::getLogHash(),
+					'href'   => '/?' . self::getSlug() . '-view&endpoint=Results&request_id=' . WPPF_REQUEST_ID,
 					'meta'   => array( 'target' => '_blank' )
 				) );
 			} );
@@ -38,17 +46,20 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 	/**
 	 * Previous hook model
 	 *
-	 * @var WPPF_Hook_profiler_model
+	 * @var hook\models\Hook
 	 */
 	private $hook_model;
 
 	/**
 	 * Previous callback model
 	 *
-	 * @var WPPF_Hook_profiler_model
+	 * @var hook\models\Hook
 	 */
 	private $callback_model;
 
+	private $hook_models = [];
+
+	private $callback_models = [];
 
 	/**
 	 * @param $a
@@ -58,13 +69,20 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 	 */
 	public function hook_start( $a ) {
 
-		$this->hook_model             = new WPPF_Hook_profiler_model();
-		$this->hook_model->request_id = WPPF_REQUEST_ID;
-		$this->hook_model->name       = current_filter();
-		$this->hook_model->is_hook    = true;
-		$this->hook_model->time       = microtime( true );
+		$model             = new hook\models\Hook();
+		$model->request_id = WPPF_REQUEST_ID;
+		$model->name       = current_filter();
+		$model->is_hook    = true;
+		$model->time       = microtime( true );
 
-		$this->hook_model->save();
+
+		if ( ( $callback = end( $this->callback_models ) ) !== false ) {
+			$model->parent_id = $callback->id;
+		}
+
+		$model->save();
+
+		$this->hook_models[] = $model;
 
 		return $a;
 	}
@@ -76,14 +94,24 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 	 * @throws Exception
 	 */
 	public function hook_end( $a ) {
+		$model = array_pop( $this->hook_models );
 
-		if ( $this->hook_model ) {
-			$this->hook_model->duration = microtime( true ) - $this->hook_model->time;
-			$this->hook_model->save();
+		if ( $model ) {
+
+			$model->duration = microtime( true ) - $model->time;
+
+			$model->save();
+
+			$callback = array_pop( $this->callback_models );
+
+			if ( $callback ) {
+				$callback->duration = microtime( true ) - $callback->time;
+				$callback->save();
+			}
+
 		}
 
 		return $a;
-
 	}
 
 	/**
@@ -100,6 +128,7 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 		foreach ( $wp_filter as $name => &$hook ) {
 
 			if ( ! isset( $this->_mutex[ $name ] ) ) {
+
 				$this->_mutex[ $name ] = true;
 
 				$hook->callbacks = array(
@@ -109,14 +138,14 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 				$hook->callbacks[ PHP_INT_MAX ] = isset( $hook->callbacks[ PHP_INT_MAX ] ) ? $hook->callbacks[ PHP_INT_MAX ] : array();
 
 				$hook->callbacks[ PHP_INT_MIN ] = array(
-					                                  'DevLog_hook_start' => array(
+					                                  self::PREFIX . 'hook_start' => array(
 						                                  'function'      => array( $this, 'hook_start' ),
 						                                  'accepted_args' => 1
 					                                  )
 				                                  ) + $hook->callbacks[ PHP_INT_MIN ];
 
 				$hook->callbacks[ PHP_INT_MAX ] = array(
-					                                  'DevLog_hook_end' => array(
+					                                  self::PREFIX . 'hook_end' => array(
 						                                  'function'      => array( $this, 'hook_end' ),
 						                                  'accepted_args' => 1
 
@@ -132,14 +161,19 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 					$_callbacks = $callbacks;
 					foreach ( $_callbacks as $index => &$callback ) {
 
-						if ( strpos( $index, 'DevLog_' ) !== 0 ) {
+						if ( strpos( $index, self::PREFIX ) !== 0 ) {
+
+							/**
+							 * Insert callback after current callback
+							 * */
 							self::array_insert( $callbacks, $index, [
-								'DevLog_CB_' . $index => [
+								self::PREFIX . 'CB_' . $index => [
 									'function'      => function ( $a ) use ( $index ) {
 
-										if ( $this->callback_model ) {
-											$this->callback_model->duration = microtime( true ) - $this->callback_model->time;
-											$this->callback_model->save();
+										$model = array_pop( $this->callback_models );
+										if ( $model ) {
+											$model->duration = microtime( true ) - $model->time;
+											$model->save();
 										}
 
 										/*
@@ -155,14 +189,16 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 											$index = "?";
 										}
 
-										$this->callback_model             = new WPPF_Hook_profiler_model();
-										$this->callback_model->request_id = WPPF_REQUEST_ID;
-										$this->callback_model->name       = $index;
-										$this->callback_model->is_hook    = false;
-										$this->callback_model->time       = microtime( true );
-										$this->callback_model->parent_id  = $this->hook_model->id;
-										$this->callback_model->file       = $cat;
-										$this->callback_model->save();
+										$model             = new hook\models\Hook();
+										$model->request_id = WPPF_REQUEST_ID;
+										$model->name       = $index;
+										$model->is_hook    = false;
+										$model->time       = microtime( true );
+										$model->parent_id  = end( $this->hook_models )->id;
+										$model->file       = $cat;
+										$model->save();
+
+										$this->callback_models[] = $model;
 
 										self::retrieve_wp_hooks();
 
@@ -199,13 +235,35 @@ class WPPF_Hook_Profiler extends WPPF_Profiler_Base {
 
 
 	/**
+	 * @param \WPPF\profilers\hook\models\Hook $hook
+	 */
+	private static function retHook( $hook ) {
+		echo "<li>" . ( $hook->is_hook ? "HOOK - " : "CALLBACK - " ) . $hook->name;
+
+		if ( $hook->getChilds()->count() > 0 ) {
+			echo "<ul>";
+			foreach ( $hook->getChilds()->all() as $child ) {
+				self::retHook( $child );
+			}
+			echo "</ul>";
+		}
+		echo "</li>";
+	}
+
+	/**
 	 * @param $log_name
 	 *
 	 * @throws Exception
 	 */
-	public static function endpointResults( $log_name ) {
+	public static function endpointResults( $request_id ) {
 
-//		$log = Log::get( [ 'data', 'messages' ], [
+		$hooks = hook\models\Hook::find()->where( [ 'request_id' => $request_id ] )->andWhere( [ 'parent_id' => null ] )->all();
+		echo "<ul>";
+		foreach ( $hooks as $hook ) {
+			self::retHook( $hook );
+		}
+		echo "</ul>";
+		//		$log = Log::get( [ 'data', 'messages' ], [
 //			[
 //				'logs.name',
 //				'=',

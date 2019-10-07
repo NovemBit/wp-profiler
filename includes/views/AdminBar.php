@@ -1,4 +1,8 @@
 <?php
+namespace WPPF\views;
+
+use WPPF\profilers\Hook;
+use WPPF\WPPF;
 
 if ( ! defined( 'WPPF_PLUGIN_ACTIVE' ) ) {
 	exit;
@@ -7,7 +11,7 @@ if ( ! defined( 'WPPF_PLUGIN_ACTIVE' ) ) {
 /**
  * Class WPPF_Admin_Bar
  */
-class WPPF_Admin_Bar {
+class AdminBar {
 
 	/**
 	 * WPPF_Admin_Bar constructor.
@@ -26,7 +30,7 @@ class WPPF_Admin_Bar {
 			'title' => __('Profiler')
 		) );
 
-		if( WPPF::isActiveProfiler( WPPF_Hook_Profiler::class ) ){
+		if( WPPF::isActiveProfiler( Hook::className() ) ){
 			do_action( 'wppf_admin_bar' );
 		}
 

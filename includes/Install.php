@@ -1,8 +1,11 @@
 <?php
+namespace WPPF;
 
-defined( 'ABSPATH' ) || exit;
+use Exception;
+use WPPF\profilers\Hook;
+use WPPF\profilers\Request;
 
-class WPPF_Install {
+class Install {
 
     /**
      * Mu plugin filename
@@ -19,8 +22,8 @@ class WPPF_Install {
 
 		self::installMuPlugin();
 
-		WPPF::setProfilerStatus( WPPF_Hook_Profiler::class, WPPF::PROFILER_ACTIVE );
-		WPPF::setProfilerStatus( WPPF_Request_Profiler::class, WPPF::PROFILER_ACTIVE );
+		WPPF::setProfilerStatus( Hook::class, WPPF::PROFILER_ACTIVE );
+		WPPF::setProfilerStatus( Request::class, WPPF::PROFILER_ACTIVE );
 
 	}
 
@@ -80,7 +83,7 @@ class WPPF_Install {
 	 * Exception @throws Exception
 	 */
 	private static function migration() {
-		WPPF_Bootstrap::init();
+		Bootstrap::init();
 	}
 
 

@@ -1,7 +1,14 @@
 <?php
-defined( 'ABSPATH' ) || exit;
 
-abstract class WPPF_Profiler_Base {
+namespace WPPF\profilers;
+
+use Exception;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionProperty;
+use WPPF\WPPF;
+
+abstract class Profiler {
 
 	private static $_id = 0;
 
@@ -20,27 +27,35 @@ abstract class WPPF_Profiler_Base {
 		}
 	}
 
+	public static function className() {
+		$path = explode( '\\', static::class );
+
+		return strtolower( array_pop( $path ) );
+	}
+
 	/**
 	 * Form to run profiler
 	 * Prepare method can be overwrite
 	 */
 	public function prepare() {
-	    add_action( 'wppf_admin_bar', function(  ){
-	        global $wp_admin_bar;
-		    $wp_admin_bar->add_menu( array(
-			    'parent' => 'wppf_admin_bar',
-			    'id' => 'run_hook_profiler',
-			    'title' => __('Hook profiler'),
-			    'href' => '',
-                'meta'=> array( 'html' => sprintf( '<form id="%s" class="%s" action="" method="post"><input type="submit" name="%s" value="%s" class="%s"></form>',
-	                static::class,
-	                self::class . '_form ' . static::class . '_form child_' . self::$_id,
-	                static::class,
-	                "Run",
-                    "button button-primary"
-                )),
-		    ) );
-        } );
+		add_action( 'wppf_admin_bar', function () {
+			global $wp_admin_bar;
+			$wp_admin_bar->add_menu( array(
+				'parent' => 'wppf_admin_bar',
+				'id'     => 'run_hook_profiler',
+				'title'  => __( 'Hook profiler' ),
+				'href'   => '',
+				'meta'   => array(
+					'html' => sprintf( '<form id="%s" class="%s" action="" method="post"><input type="submit" name="%s" value="%s" class="%s"></form>',
+						static::class,
+						self::class . '_form ' . static::class . '_form child_' . self::$_id,
+						static::class,
+						"Run",
+						"button button-primary"
+					)
+				),
+			) );
+		} );
 	}
 
 	/**
@@ -85,7 +100,7 @@ abstract class WPPF_Profiler_Base {
 	 * @return string|string[]|null
 	 */
 	public static function getSlug() {
-		return WPPF::SLUG . '-' . strtolower( preg_replace( '/\s+/', '-', static::getName() ) );
+		return WPPF::SLUG . '-' . static::className();
 	}
 
 	/**
@@ -98,14 +113,13 @@ abstract class WPPF_Profiler_Base {
 	}
 
 	/**
-	 * @return bool
 	 * @throws ReflectionException
 	 * @throws Exception
 	 */
 	public static function registerEndpoints() {
 
 		$modelReflector = new ReflectionClass( static::class );
-		if ( isset( $_GET[ static::class . '_view' ] ) && isset( $_GET['endpoint'] ) ) {
+		if ( isset( $_GET[ static::getSlug() . '-view' ] ) && isset( $_GET['endpoint'] ) ) {
 
 			$action = $_GET['endpoint'];
 			$method = $modelReflector->getMethod( "endpoint" . $action );
@@ -125,8 +139,6 @@ abstract class WPPF_Profiler_Base {
 			}
 
 		}
-
-		return false;
 	}
 
 	public static function beforeRenderPage() {
@@ -230,24 +242,24 @@ abstract class WPPF_Profiler_Base {
 
 	public static $layout = "index.php";
 
-	public function render($file, $params = [], $root = false){
+	public function render( $file, $params = [], $root = false ) {
 
-		$file = __DIR__.'/../views/templates/'.$file.'.php';
+		$file = __DIR__ . '/../views/templates/' . $file . '.php';
 
-		foreach($params as $key=>$param){
-		    ${$key} = $param;
-        }
+		foreach ( $params as $key => $param ) {
+			${$key} = $param;
+		}
 
 		ob_start();
-	    include_once($file);
+		include_once( $file );
 		$content = ob_get_contents();
 		ob_clean();
 
-	    if($root==false){
-	        include_once __DIR__."/../views/layouts/".static::$layout;
-        } else{
-	        echo $content;
-        }
+		if ( $root == false ) {
+			include_once __DIR__ . "/../views/layouts/" . static::$layout;
+		} else {
+			echo $content;
+		}
 
-    }
+	}
 }

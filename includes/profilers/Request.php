@@ -1,12 +1,9 @@
 <?php
+namespace WPPF\profilers;
 
-defined( 'ABSPATH' ) || exit;
+use Exception;
 
-use DevLog\DataMapper\Mappers\Log;
-use DevLog\DevLog;
-use DevLog\DevLogHelper;
-
-class WPPF_Request_Profiler extends WPPF_Profiler_Base {
+class Request extends Profiler {
 
 	public static function getName() {
 		return __( 'Request Profiler', 'wppf' );
@@ -26,7 +23,7 @@ class WPPF_Request_Profiler extends WPPF_Profiler_Base {
 	 * @throws Exception
 	 */
 	public function init() {
-
+        return;
 		self::registerEndpoints();
 
 		/*

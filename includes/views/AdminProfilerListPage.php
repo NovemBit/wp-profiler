@@ -1,13 +1,13 @@
 <?php
+namespace WPPF\views;
 
-if ( ! defined( 'WPPF_PLUGIN_ACTIVE' ) ) {
-	exit;
-}
+use WPPF\profilers\Profiler;
+use WPPF\WPPF;
 
 /**
  * Class WPPF_Admin_Profiler_List_Page
  */
-class WPPF_Admin_Profiler_List_Page {
+class AdminProfilerListPage {
 
 	/**
 	 * WPPF_Admin_Profiler_List_Page constructor.
@@ -58,14 +58,14 @@ class WPPF_Admin_Profiler_List_Page {
 
 	public function beforeRenderPage() {
 
-		/** @var WPPF_Profiler_Base $class */
+		/** @var Profiler $class */
 		$this->active_profiler_class = WPPF::getAllProfilerList()[0];
 
 		if ( isset( $_GET['tab'] ) ) {
-			/** @var WPPF_Profiler_Base $profiler */
 			foreach ( WPPF::getAllProfilerList() as $profiler ) {
 
-				if ( $profiler::getSlug() == $_GET['tab'] ) {
+
+				if ( $profiler == $_GET['tab'] ) {
 					$this->active_profiler_class = $profiler;
 				}
 
@@ -77,7 +77,7 @@ class WPPF_Admin_Profiler_List_Page {
 			WPPF::setProfilerStatus( $this->active_profiler_class, WPPF::isActiveProfiler( $this->active_profiler_class ) ? WPPF::PROFILER_INACTIVE : WPPF::PROFILER_ACTIVE );
 		}
 
-		call_user_func( array( $this->active_profiler_class, 'beforeRenderPage' ) );
+		call_user_func( array( "WPPF\\profilers\\".$this->active_profiler_class, 'beforeRenderPage' ) );
 
 	}
 
@@ -96,9 +96,10 @@ class WPPF_Admin_Profiler_List_Page {
 			if ($this->active_profiler_class == $profiler ) {
 				$active = 'nav-tab-active';
 			}
+			$class = "WPPF\\profilers\\".$profiler;
 			?>
             <a class="nav-tab <?php echo $active; ?>"
-               href="<?php echo admin_url( 'admin.php?page=' . WPPF::SLUG . '-profiler-list' . '&tab=' . $profiler::getSlug() ); ?>"><?php _e( $profiler::getName(), 'wppf' ); ?> </a>
+               href="<?php echo admin_url( 'admin.php?page=' . WPPF::SLUG . '-profiler-list' . '&tab=' . $profiler ); ?>"><?php _e( $class::getName(), 'wppf' ); ?> </a>
 			<?php
 		}
 
@@ -125,7 +126,7 @@ class WPPF_Admin_Profiler_List_Page {
         </table>
 
 		<?php
-		call_user_func( array( $this->active_profiler_class, 'renderTab' ) );
+		call_user_func( array( $class, 'renderTab' ) );
 
 	}
 

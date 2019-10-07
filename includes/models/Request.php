@@ -1,11 +1,12 @@
 <?php
+namespace WPPF\models;
 
 /**
  *
  * @property int id
  * @property double time
  */
-class WPPF_Request_model extends WPPF_active_record {
+class Request extends ActiveRecord {
 
 	/**
 	 * Table name

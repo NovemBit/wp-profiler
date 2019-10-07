@@ -25,6 +25,11 @@
       "enabled": false
     }
   },
+  "autoload": {
+    "psr-4": {
+      "WPPF\\": "includes/"
+    }
+  },
   "extra": {
   },
   "repositories": [

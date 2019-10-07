@@ -1,5 +1,9 @@
 <?php
 
+namespace WPPF\profilers\hook\models;
+
+use WPPF\models\ActiveRecord;
+
 /**
  *
  * @property int request_id
@@ -11,7 +15,7 @@
  * @property string file
  * @property string module
  */
-class WPPF_Hook_profiler_model extends WPPF_active_record {
+class Hook extends ActiveRecord {
 
 	/**
 	 * Table name
@@ -57,5 +61,13 @@ class WPPF_Hook_profiler_model extends WPPF_active_record {
 		];
 	}
 
+	public function getParent() {
+		return $this->hasOne( Hook::class, [ 'id' => 'parent_id' ] );
+	}
 
+
+	public function getChilds(){
+		return $this->hasMany(Hook::class, ['parent_id' => 'id']);
+
+	}
 }
