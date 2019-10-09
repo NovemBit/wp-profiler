@@ -10,6 +10,9 @@ class Hook extends Profiler {
 
 	const PREFIX = "WPPF_HP_";
 
+	/**
+	 * @return mixed|string|void
+	 */
 	public static function getName() {
 		return __( 'Hook Profiler', 'wppf' );
 	}
@@ -38,24 +41,6 @@ class Hook extends Profiler {
 				) );
 			} );
 	}
-
-
-	private $_mutex = [];
-
-
-	/**
-	 * Previous hook model
-	 *
-	 * @var hook\models\Hook
-	 */
-	private $hook_model;
-
-	/**
-	 * Previous callback model
-	 *
-	 * @var hook\models\Hook
-	 */
-	private $callback_model;
 
 	private $hook_models = [];
 
@@ -115,6 +100,44 @@ class Hook extends Profiler {
 	}
 
 	/**
+	 * @param $callback_name
+	 *
+	 * @throws \ReflectionException
+	 */
+	private function write( $callback_name ) {
+
+		$model = array_pop( $this->callback_models );
+		if ( $model ) {
+			$model->duration = microtime( true ) - $model->time;
+			$model->save();
+		}
+
+		/*
+		 * Getting declaration coordinates
+		 * File and line
+		 */
+		$cat = '';
+		if ( function_exists( $callback_name ) ) {
+			$reflFunc = new ReflectionFunction( $callback_name );
+			$cat      = str_replace( ABSPATH, '',
+					$reflFunc->getFileName() ) . ':' . $reflFunc->getStartLine();
+		} else {
+			$callback_name = "?";
+		}
+
+		$model             = new hook\models\Hook();
+		$model->request_id = WPPF_REQUEST_ID;
+		$model->name       = $callback_name;
+		$model->is_hook    = false;
+		$model->time       = microtime( true );
+		$model->parent_id  = end( $this->hook_models )->id;
+		$model->file       = $cat;
+		$model->save();
+
+		$this->callback_models[] = $model;
+	}
+
+	/**
 	 * Fetch hooks and add callbacks to measure
 	 * Compiling time
 	 */
@@ -127,91 +150,58 @@ class Hook extends Profiler {
 
 		foreach ( $wp_filter as $name => &$hook ) {
 
-			if ( ! isset( $this->_mutex[ $name ] ) ) {
 
-				$this->_mutex[ $name ] = true;
+			$hook->callbacks = [ PHP_INT_MIN => isset( $hook->callbacks[ PHP_INT_MIN ] ) ? $hook->callbacks[ PHP_INT_MIN ] : [] ] + $hook->callbacks;
 
-				$hook->callbacks = array(
-					                   PHP_INT_MIN => isset( $hook->callbacks[ PHP_INT_MIN ] ) ? $hook->callbacks[ PHP_INT_MIN ] : array()
-				                   ) + $hook->callbacks;
+			$hook->callbacks[ PHP_INT_MAX ] = isset( $hook->callbacks[ PHP_INT_MAX ] ) ? $hook->callbacks[ PHP_INT_MAX ] : [];
 
-				$hook->callbacks[ PHP_INT_MAX ] = isset( $hook->callbacks[ PHP_INT_MAX ] ) ? $hook->callbacks[ PHP_INT_MAX ] : array();
+			$hook->callbacks[ PHP_INT_MIN ] = [
+				                                  self::PREFIX . 'hook_start' => [
+					                                  'function'      => [ $this, 'hook_start' ],
+					                                  'accepted_args' => 1
+				                                  ]
+			                                  ] + $hook->callbacks[ PHP_INT_MIN ];
 
-				$hook->callbacks[ PHP_INT_MIN ] = array(
-					                                  self::PREFIX . 'hook_start' => array(
-						                                  'function'      => array( $this, 'hook_start' ),
-						                                  'accepted_args' => 1
-					                                  )
-				                                  ) + $hook->callbacks[ PHP_INT_MIN ];
+			/**
+			 * Adding Max priority haystack
+			 * */
+			$hook->callbacks[ PHP_INT_MAX ][ self::PREFIX . 'hook_end' ] = [
+				'function'      => [ $this, 'hook_end' ],
+				'accepted_args' => 1
+			];
 
-				$hook->callbacks[ PHP_INT_MAX ] = array(
-					                                  self::PREFIX . 'hook_end' => array(
-						                                  'function'      => array( $this, 'hook_end' ),
-						                                  'accepted_args' => 1
+			/**
+			 * Fetching Hook callbacks
+			 *
+			 * @var WP_Hook $hook
+			 */
+			foreach ( $hook->callbacks as $priority => &$callbacks ) {
+				foreach ( $callbacks as $callback_name => &$callback ) {
 
-					                                  )
-				                                  ) + $hook->callbacks[ PHP_INT_MAX ];
+					if (
+						! isset( $callbacks[ self::PREFIX . 'CB_' . $callback_name ] ) &&
+						strpos( $callback_name, self::PREFIX ) !== 0
+					) {
 
-				/**
-				 * Fetching Hook callbacks
-				 *
-				 * @var WP_Hook $hook
-				 */
-				foreach ( $hook->callbacks as $priority => &$callbacks ) {
-					$_callbacks = $callbacks;
-					foreach ( $_callbacks as $index => &$callback ) {
+						/**
+						 * Insert callback after current callback
+						 * */
+						self::array_insert( $callbacks, $callback_name, [
+							self::PREFIX . 'CB_' . $callback_name => [
+								'function'      => function ( $a ) use ( $callback_name ) {
+									$this->write( $callback_name );
+									self::retrieve_wp_hooks();
 
-						if ( strpos( $index, self::PREFIX ) !== 0 ) {
-
-							/**
-							 * Insert callback after current callback
-							 * */
-							self::array_insert( $callbacks, $index, [
-								self::PREFIX . 'CB_' . $index => [
-									'function'      => function ( $a ) use ( $index ) {
-
-										$model = array_pop( $this->callback_models );
-										if ( $model ) {
-											$model->duration = microtime( true ) - $model->time;
-											$model->save();
-										}
-
-										/*
-										 * Getting declaration coordinates
-										 * File and line
-										 */
-										$cat = '';
-										if ( function_exists( $index ) ) {
-											$reflFunc = new ReflectionFunction( $index );
-											$cat      = str_replace( ABSPATH, '',
-													$reflFunc->getFileName() ) . ':' . $reflFunc->getStartLine();
-										} else {
-											$index = "?";
-										}
-
-										$model             = new hook\models\Hook();
-										$model->request_id = WPPF_REQUEST_ID;
-										$model->name       = $index;
-										$model->is_hook    = false;
-										$model->time       = microtime( true );
-										$model->parent_id  = end( $this->hook_models )->id;
-										$model->file       = $cat;
-										$model->save();
-
-										$this->callback_models[] = $model;
-
-										self::retrieve_wp_hooks();
-
-										return $a;
-									},
-									'accepted_args' => 1
-								]
-							] );
-						}
+									return $a;
+								},
+								'accepted_args' => 1
+							]
+						] );
 					}
-
 				}
+
 			}
+
 		}
 	}
 
@@ -239,7 +229,7 @@ class Hook extends Profiler {
 	 */
 	private static function retHook( $hook ) {
 		echo "<li>" . ( $hook->is_hook ? "HOOK - " : "CALLBACK - " ) . $hook->name;
-
+		echo ($hook->is_hook && $hook->parent_id == null) ? " - ". round($hook->duration,5).'s' : '';
 		if ( $hook->getChilds()->count() > 0 ) {
 			echo "<ul>";
 			foreach ( $hook->getChilds()->all() as $child ) {
