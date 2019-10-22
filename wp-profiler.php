@@ -33,3 +33,5 @@ function WPPF() {
 
 // Global for backwards compatibility.
 $GLOBALS['wppf'] = WPPF();
+
+

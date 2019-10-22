@@ -61,8 +61,8 @@ class WPPF {
 	 * @since 2.3
 	 */
 	private function init_hooks() {
-		register_activation_hook( WPPF_PLUGIN_FILE, array( 'WPPF_Install', 'install' ) );
-		register_deactivation_hook( WPPF_PLUGIN_FILE, array( 'WPPF_Install', 'uninstall' ) );
+		register_activation_hook( WPPF_PLUGIN_FILE, [ Install::class, 'install' ] );
+		register_deactivation_hook( WPPF_PLUGIN_FILE, [ Install::class, 'uninstall' ] );
 
 //		register_shutdown_function( array( $this, 'log_errors' ) );
 

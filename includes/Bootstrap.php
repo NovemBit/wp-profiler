@@ -18,6 +18,7 @@ class Bootstrap {
 	 * Exception @throws Exception
 	 */
 	public static function init() {
+
 		self::includeFiles();
 
 		self::defineConstants();
@@ -26,7 +27,7 @@ class Bootstrap {
 			/**
 			 * Creating profiler object with config
 			 * */
-			$class = "\\WPPF\\profilers\\".$profiler;
+			$class = "\\WPPF\\profilers\\".ucfirst($profiler);
 
 			$obj = new $class( WPPF::getOption( $profiler . '_config', [] ) );
 

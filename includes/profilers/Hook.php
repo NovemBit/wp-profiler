@@ -104,7 +104,7 @@ class Hook extends Profiler {
 	 *
 	 * @throws \ReflectionException
 	 */
-	private function write( $callback_name ) {
+	private function callback_start( $callback_name ) {
 
 		$model = array_pop( $this->callback_models );
 		if ( $model ) {
@@ -189,7 +189,7 @@ class Hook extends Profiler {
 						self::array_insert( $callbacks, $callback_name, [
 							self::PREFIX . 'CB_' . $callback_name => [
 								'function'      => function ( $a ) use ( $callback_name ) {
-									$this->write( $callback_name );
+									$this->callback_start( $callback_name );
 									self::retrieve_wp_hooks();
 
 									return $a;
@@ -241,9 +241,7 @@ class Hook extends Profiler {
 	}
 
 	/**
-	 * @param $log_name
-	 *
-	 * @throws Exception
+	 * @param $request_id
 	 */
 	public static function endpointResults( $request_id ) {
 
